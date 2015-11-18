@@ -18,8 +18,23 @@ class Transition(object):
             :param configuration: is the current configuration
             :return : A new configuration or -1 if the pre-condition is not satisfied
         """
-        raise NotImplementedError('Please implement left_arc!')
-        return -1
+
+        if not conf.buffer or not conf.stack:
+            return -1
+
+        idx_wi = conf.stack[-1]
+        y = [x[2] for x in conf.arcs]
+        if not (idx_wi in y) and not idx_wi == 0 :
+            # Pop the rightmost or top element of the stack
+            conf.stack.pop(-1)
+
+            # Get the leftmost or start element of the buffer
+            idx_wj = conf.buffer[0]
+
+            conf.arcs.append((idx_wj, relation, idx_wi))
+        else:
+            return -1
+
 
     @staticmethod
     def right_arc(conf, relation):
@@ -44,8 +59,16 @@ class Transition(object):
             :param configuration: is the current configuration
             :return : A new configuration or -1 if the pre-condition is not satisfied
         """
-        raise NotImplementedError('Please implement reduce!')
-        return -1
+        if not conf.buffer or not conf.stack:
+            return -1
+
+        idx_wi = conf.stack[-1]
+        y = [x[2] for x in conf.arcs]
+        if idx_wi in y:
+            conf.stack.pop(-1)
+        else:
+            return -1
+
 
     @staticmethod
     def shift(conf):
@@ -53,5 +76,12 @@ class Transition(object):
             :param configuration: is the current configuration
             :return : A new configuration or -1 if the pre-condition is not satisfied
         """
-        raise NotImplementedError('Please implement shift!')
-        return -1
+        if not conf.buffer or not conf.stack:
+            return -1
+
+        # Pop the leftmost or start element of the buffer
+        idx_wi = conf.buffer.pop(0)
+
+        # Append it to the stack
+        conf.stack.append(idx_wi)
+
