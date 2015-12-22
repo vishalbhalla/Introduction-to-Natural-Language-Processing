@@ -1,6 +1,8 @@
 import math
 import nltk
 import time
+from collections import Counter
+import string
 
 # Constants to be used by you when you fill the functions
 START_SYMBOL = '*'
@@ -15,6 +17,50 @@ def calc_probabilities(training_corpus):
     unigram_p = {}
     bigram_p = {}
     trigram_p = {}
+
+    # training_corpus = ["he is good"+ " \n " + "he is bad" ]
+    unigram_words_set = []
+    bigram_words_set = []
+    trigram_words_set = []
+
+    for line in training_corpus:
+        # Strip new line and other space characters at the end.
+        line = line.strip()
+
+        # Remove punctuation symbols from the string.
+        line = line.translate(string.maketrans("",""), string.punctuation)
+
+        line = START_SYMBOL + ' ' + line + ' ' + STOP_SYMBOL
+
+        words_list = line.split(' ')
+        i = 0
+        len_words = len(words_list)
+        for word in words_list:
+            if(not(word is START_SYMBOL) and not(word is STOP_SYMBOL)):
+                unigram_words_set.append(word)
+            if i<len_words-1:
+                bigram_words_set.append(words_list[i+1] + " " + words_list[i])
+                if i<len_words-2:
+                    trigram_words_set.append(words_list[i+2] + " " + words_list[i+1] + " " + words_list[i])
+            i+=1
+
+    unigram_words_counter = Counter(unigram_words_set)
+    bigram_words_counter = Counter(bigram_words_set)
+    trigram_words_counter = Counter(trigram_words_set)
+
+    total_words = sum(unigram_words_counter.values()) #len(unigram_words_counter.keys())
+    for word in unigram_words_counter:
+        unigram_p[word] = math.log(float(unigram_words_counter[word])/total_words)
+
+    for word in bigram_words_counter:
+        bigram_i_1_word = word.split(' ')[0]
+        bigram_p[word] = math.log(float(bigram_words_counter[word])/float(unigram_words_counter[bigram_i_1_word]))
+
+    for word in trigram_words_counter:
+        trigram_i_2_1_word = word.split(' ')[0] + " " + word.split(' ')[1]
+        trigram_p[word] = math.log(float(trigram_words_counter[word])/float(bigram_words_counter[trigram_i_2_1_word]))
+
+
     return unigram_p, bigram_p, trigram_p
 
 # Prints the output for q1
